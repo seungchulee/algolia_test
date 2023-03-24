@@ -5,7 +5,9 @@ import (
 	"os"
 
 	"github.com/algolia/algoliasearch-client-go/v3/algolia/opt"
+	"github.com/algolia/algoliasearch-client-go/v3/algolia/personalization"
 	"github.com/algolia/algoliasearch-client-go/v3/algolia/recommend"
+	"github.com/algolia/algoliasearch-client-go/v3/algolia/region"
 	"github.com/algolia/algoliasearch-client-go/v3/algolia/search"
 )
 
@@ -79,9 +81,35 @@ func algoRecommendation(apiKey string) {
 	fmt.Println(res2)
 }
 
+func algoPersonalization(apiKey string) {
+	client := personalization.NewClientWithConfig(
+		personalization.Configuration{
+			AppID:  "HKWXA0EXKH",
+			APIKey: apiKey,
+			Region: region.US,
+		})
+	strategy := personalization.Strategy{
+		EventsScoring: []personalization.EventsScoring{
+			{"Add to cart", "conversion", 50},
+			{"Purchase", "conversion", 100},
+		},
+		FacetsScoring: []personalization.FacetsScoring{
+			{"brand", 100},
+			{"categories", 10},
+		},
+		PersonalizationImpact: opt.PersonalizationImpact(50),
+	}
+	res, _ := client.SetPersonalizationStrategy(strategy, true)
+	fmt.Println(res)
+
+	res2, _ := client.GetPersonalizationStrategy()
+	fmt.Println(res2)
+}
+
 func main() {
 	// need search/write key
 	apiKey := os.Getenv("key")
 	algoSearch(apiKey)
 	algoRecommendation(apiKey)
+	algoPersonalization(apiKey)
 }

@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	"github.com/algolia/algoliasearch-client-go/v3/algolia/search"
 )
 
 type Record struct {
@@ -10,6 +10,12 @@ type Record struct {
 }
 
 func main() {
-	fmt.Println("Hello, World!")
+	client := search.NewClient("", "")
 
+	index := client.InitIndex("")
+	resSave, err := index.SaveObjects(Record{ObjectID: "", Name: ""})
+	if err != nil {
+		panic(err)
+	}
+	resSave.Wait()
 }

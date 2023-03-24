@@ -52,4 +52,6 @@ func main() {
 	}
 	rr, _ := index.FindObject(f, "hello", false)
 	fmt.Println(rr)
+	position := res.GetObjectPosition("saas-sample-data-98")
+	fmt.Println(position)
 }

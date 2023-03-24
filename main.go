@@ -5,21 +5,22 @@ import (
 	"os"
 
 	"github.com/algolia/algoliasearch-client-go/v3/algolia/opt"
+	"github.com/algolia/algoliasearch-client-go/v3/algolia/recommend"
 	"github.com/algolia/algoliasearch-client-go/v3/algolia/search"
 )
 
 type Record struct {
 	ObjectID string `json:"objectID"`
 	Name     string `json:"name"`
+	NewCol   string `json:"newCol"`
 }
 
-func main() {
-	apiKey := os.Getenv("key")
+func algoSearch(apiKey string) {
 	client := search.NewClient("HKWXA0EXKH", apiKey)
 
 	index := client.InitIndex("test_datium")
 	// write
-	resSave, err := index.SaveObject(Record{ObjectID: "test", Name: "test"})
+	resSave, err := index.SaveObject(Record{ObjectID: "test", Name: "test", NewCol: "test"})
 	if err != nil {
 		panic(err)
 	}
@@ -29,12 +30,14 @@ func main() {
 	params := []interface{}{
 		opt.AttributesToRetrieve("email", "company", "city"),
 		opt.HitsPerPage(10),
+		opt.UserToken("stephen-user-test"),
 	}
 	res, err := index.Search("Kathleen", params...)
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println(res.Hits[0])
+	fmt.Println("QUERY ID")
+	fmt.Println(res.QueryID, res.Hits[0])
 
 	r, err := index.SearchForFacetValues("company", "Associates")
 	if err != nil {
@@ -54,4 +57,31 @@ func main() {
 	fmt.Println(rr)
 	position := res.GetObjectPosition("saas-sample-data-98")
 	fmt.Println(position)
+
+	settings, _ := index.GetSettings()
+	fmt.Println(settings)
+}
+
+func algoRecommendation(apiKey string) {
+	rec := recommend.NewClient("HKWXA0EXKH", apiKey)
+	options := recommend.NewRelatedProductsOptions("test_datium", "saas-sample-data-69", 0, nil, nil, nil)
+	res, err := rec.GetRelatedProducts([]recommend.RelatedProductsOptions{options})
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(res.Results[0].Hits[0])
+
+	options2 := recommend.RecommendationsOptions{IndexName: "test_datium", ObjectID: "saas-sample-data-69", Model: recommend.BoughtTogether}
+	res2, err := rec.GetRecommendations([]recommend.RecommendationsOptions{options2})
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(res2)
+}
+
+func main() {
+	// need search/write key
+	apiKey := os.Getenv("key")
+	algoSearch(apiKey)
+	algoRecommendation(apiKey)
 }

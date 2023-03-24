@@ -28,11 +28,28 @@ func main() {
 	// search
 	params := []interface{}{
 		opt.AttributesToRetrieve("email", "company", "city"),
-		opt.HitsPerPage(1),
+		opt.HitsPerPage(10),
 	}
 	res, err := index.Search("Kathleen", params...)
 	if err != nil {
 		panic(err)
 	}
 	fmt.Println(res.Hits[0])
+
+	r, err := index.SearchForFacetValues("company", "Associates")
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(r.FacetHits)
+
+	f := func(o map[string]interface{}) bool {
+		itf, ok := o["objectID"]
+		if !ok {
+			return false
+		}
+		hitObjectID, ok := itf.(string)
+		return ok && hitObjectID == "test"
+	}
+	rr, _ := index.FindObject(f, "hello", false)
+	fmt.Println(rr)
 }
